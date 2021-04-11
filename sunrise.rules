@@ -1,0 +1,93 @@
+import java.time.format.DateTimeFormatter
+
+rule "schedule sunrise wakeup"
+when
+    Item AlarmClockTime changed or
+    Item Sunrise_Enabled received command ON
+then
+    if(Sunrise_Enabled.state == ON) {
+        if(AlarmClockTime.state != UNDEF) {
+            // calculate start time of sunrise
+            var long AlarmClockTime2 = (AlarmClockTime.state as DateTimeType).zonedDateTime.toInstant.toEpochMilli
+            var long startTime_epoch = AlarmClockTime2 - ((Sunrise_Minutes_Duration.state as Number) * 60 * 1000).intValue - ((Sunrise_Minutes_Before_Alarm.state as Number) * 60 * 1000).intValue
+            var DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm")
+            var ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTime_epoch), ZoneId.of("Europe/Berlin"))
+            var String startTime_string = zdt.format(formatter)
+
+            // figure out weekday of next alarm
+            // tasmota timer needs to know which day of the week
+            // to fire the timer
+            // tasmota format 0000000, pos 1 = Sunday
+            // openhab getDayOfWeek 1 = Monday!
+            var int weekDay_number = zdt.getDayOfWeek().getValue()
+            weekDay_number += 1
+            if(weekDay_number == 8) {
+                weekDay_number = 1
+            }
+
+            var String weekDay_string = ""
+            for(var int i=1; i<8; i++) {
+                if(i == weekDay_number) {
+                    weekDay_string += "1"
+                } else {
+                    weekDay_string += "0"
+                }
+            }
+
+            var mqttActions = getActions("mqtt","mqtt:broker:broker")
+
+            // calculate wakeup duration in seconds
+            var String wakeupDuration = (((Sunrise_Minutes_Duration.state as Number) * 60).intValue).toString
+
+            // publish wakeup duration to tasmota
+            mqttActions.publishMQTT("cmnd/shelly-bulb-1/WakeupDuration", wakeupDuration)
+            mqttActions.publishMQTT("cmnd/shelly-bulb-2/WakeupDuration", wakeupDuration)
+
+            // publish wakeup timers to tasmota
+            mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer1", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + startTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")
+            mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer1", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + startTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")
+
+            // calculate time when "risen" sun should switch off
+            var long offTime_epoch = AlarmClockTime2  + (((Sunrise_Minutes_Before_Switch_Off.state as Number) * 60 * 1000)).intValue
+            zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(offTime_epoch), ZoneId.of("Europe/Berlin"))
+            var String offTime_string = zdt.format(formatter)
+
+            // publish switch off time for "risen sun" to tasmota
+            mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer2", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + offTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")            
+            mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer2", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + offTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")            
+
+            logInfo("myLog", "Sunrise wake up was scheduled. Weekday: " + zdt.getDayOfWeek() + " / Start: " + startTime_string + " / Alarm: " + ZonedDateTime.ofInstant(Instant.ofEpochMilli((AlarmClockTime.state as DateTimeType).zonedDateTime.toInstant.toEpochMilli), ZoneId.of("Europe/Berlin")).format(formatter) + " / Switch off: " + offTime_string)
+        }
+    }
+end 
+
+// remove tasmota timers when alarms disabled on phone
+// or sunrise mode disabled in openHAB
+rule "remove scheduled sunrises wakeup"
+when
+    Item Sunrise_Enabled changed to OFF or
+    Item AlarmClockTime changed to UNDEF
+then
+    val mqttActions = getActions("mqtt","mqtt:broker:broker")
+
+    // disable timers 1 and 2
+    mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer1", "0")
+    mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer2", "0")
+    mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer1", "0")
+    mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer2", "0")
+
+    logInfo("myLog", "Sunrise wake up was disabled.")
+end
+
+// recalculate sunrise timers upon config
+// parameter change
+rule "react to changed settings"
+when
+    Item Sunrise_Minutes_Duration changed or
+    Item Sunrise_Minutes_Before_Alarm changed or
+    Item Sunrise_Minutes_Before_Switch_Off changed
+then
+    if(Sunrise_Enabled.state == ON) {
+        Sunrise_Enabled.sendCommand(ON)
+    }
+end

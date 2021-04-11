@@ -1,0 +1,11 @@
+sitemap sunrise label="Sunrise Alarm" {
+   Frame label="System" {     
+       Text label="Sunrise Alarm" {
+           Switch item=Sunrise_Enabled
+           Default item=AlarmClockTime
+           Setpoint item=Sunrise_Minutes_Duration minValue=0 maxValue=60
+           Setpoint item=Sunrise_Minutes_Before_Alarm minValue=0 maxValue=60
+           Setpoint item=Sunrise_Minutes_Before_Switch_Off minValue=0 maxValue=60
+       }
+   }
+}

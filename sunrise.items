@@ -1,0 +1,8 @@
+// sunrise.items for OpenHAB Sunrise Alarm
+// Source: https://github.com/nicolaus-hee/openhab-sunrise-alarm
+
+DateTime AlarmClockTime "Next alarm [%s]"
+Switch Sunrise_Enabled "Sunrise enabled"
+Number Sunrise_Minutes_Duration "Sunrise duration [%d min]"
+Number Sunrise_Minutes_Before_Alarm "Full sun x min before alarm [%d min]"
+Number Sunrise_Minutes_Before_Switch_Off "Keep sun on for x min after alarm [%d min]"
