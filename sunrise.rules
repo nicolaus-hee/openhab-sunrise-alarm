@@ -1,3 +1,6 @@
+// sunrise.rules for OpenHAB Sunrise Alarm
+// Source: https://github.com/nicolaus-hee/openhab-sunrise-alarm
+
 import java.time.format.DateTimeFormatter
 
 rule "schedule sunrise wakeup"
