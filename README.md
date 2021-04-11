@@ -17,7 +17,7 @@ Result in Tasmota web UI (set by openHAB rule)
 - [x] Complete sunrise x minutes before alarm
 
 ## Installation
-_TL;DR: Copy `sunrise.rules` to your rules, `sunrise.items` to your items and include the desired items in your sitemap. Adapt MQTT messages in rules to your smart light item names. Enable [alarm time sync](https://www.openhab.org/docs/apps/android.html#send-device-information-to-openhab) in your openHAB Android app to the `AlarmClockTime` item._
+_TL;DR: Copy `sunrise.rules` to your rules, `sunrise.items` to your items and include the desired items in your sitemap. Adapt MQTT messages in rules to your smart light item names. Enable [alarm time sync](https://www.openhab.org/docs/apps/android.html#send-device-information-to-openhab) in your openHAB Android app to the `AlarmClockTime` item. Add [these](https://github.com/nicolaus-hee/openhab-sunrise-alarm#set-up-tasmota-bulbs) rules to your Tasmota devices._
 
 ### Set up items
 
