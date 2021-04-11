@@ -1,4 +1,4 @@
-# openHAB Sunrise Alarm
+# OpenHAB Sunrise Alarm
 [OpenHAB](https://openhab.org) ruleset to simulate sunrise with smart light bulbs depending on Android (!) phone's alarm clock time. Automatically schedules `Timer`s and `WakeUp` commands on  [Tasmota](https://tasmota.github.io/)-flashed smart light bulbs whenever alarm clock settings are changed.
 
 Settings in openHAB sitemap
