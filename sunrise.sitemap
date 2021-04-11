@@ -1,3 +1,6 @@
+// sunrise.sitemap for OpenHAB Sunrise Alarm
+// Source: https://github.com/nicolaus-hee/openhab-sunrise-alarm
+
 sitemap sunrise label="Sunrise Alarm" {
    Frame label="System" {     
        Text label="Sunrise Alarm" {
