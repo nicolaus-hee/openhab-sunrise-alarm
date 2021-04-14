@@ -17,7 +17,7 @@ Result in Tasmota web UI (set by openHAB rule)
 - [x] Complete sunrise x minutes before alarm
 
 ## Installation
-_TL;DR: Copy `sunrise.rules` to your rules, `sunrise.items` to your items and include the desired items in your sitemap. Adapt MQTT messages in rules to your smart light item names. Enable [alarm time sync](https://www.openhab.org/docs/apps/android.html#send-device-information-to-openhab) in your openHAB Android app to the `AlarmClockTime` item. Add [these](https://github.com/nicolaus-hee/openhab-sunrise-alarm#set-up-tasmota-bulbs) rules to your Tasmota devices._
+_TL;DR: Copy `sunrise.rules` to your rules, `sunrise.items` to your items and include the desired items in your sitemap. Adapt MQTT messages in rules to your smart light item names. Enable [alarm time sync](https://www.openhab.org/docs/apps/android.html#send-device-information-to-openhab) in your openHAB Android app to the `AlarmClockTime` item._
 
 ### Set up items
 
@@ -68,16 +68,6 @@ Set up your openHAB app in such way it will send alarm clock timers to your open
 ### Set up rules
 
 Add rules from `sunrise.rules` to your rules folder or file. Make sure to adapt the MQTT messages in the rules (all lines starting wtih `mqttActions.publishMQTT`) to your smart light items.
-
-### Set up Tasmota bulbs
-In the web UI console, enter the following commands for each light:
-
-```
-rule1 on Clock#Timer=1 do Wakeup 100 endon
-rule1 1
-rule2 on Clock#Timer=2 do Backlog HSBColor 0,0,100; Power 0 endon
-rule2 1
-```
 
 This defines the `WakeUp` sequence to be launched when `timer1` is triggered and the light's switch off when `timer2` is reached.
 
