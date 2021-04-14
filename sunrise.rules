@@ -1,8 +1,5 @@
-// sunrise.rules for OpenHAB Sunrise Alarm
-// Source: https://github.com/nicolaus-hee/openhab-sunrise-alarm
-
 import java.time.format.DateTimeFormatter
-
+ 
 rule "schedule sunrise wakeup"
 when
     Item AlarmClockTime changed or
@@ -46,7 +43,7 @@ then
             mqttActions.publishMQTT("cmnd/shelly-bulb-1/WakeupDuration", wakeupDuration)
             mqttActions.publishMQTT("cmnd/shelly-bulb-2/WakeupDuration", wakeupDuration)
 
-            // publish wakeup timers to tasmota
+            // publish wakeup timer to tasmota
             mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer1", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + startTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")
             mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer1", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + startTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")
 
@@ -56,8 +53,10 @@ then
             var String offTime_string = zdt.format(formatter)
 
             // publish switch off time for "risen sun" to tasmota
-            mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer2", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + offTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")            
-            mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer2", "{ \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + offTime_string + "\", \"action\": 3, \"days\": \"" + weekDay_string + "\" }")            
+            mqttActions.publishMQTT("cmnd/shelly-bulb-1/rule1", "on Clock#Timer=1 do Backlog Wakeup 100; timer2 { \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + offTime_string + "\", \"action\": 0, \"days\": \"" + weekDay_string + "\" }; endon")
+            mqttActions.publishMQTT("cmnd/shelly-bulb-2/rule1", "on Clock#Timer=1 do Backlog Wakeup 100; timer2 { \"enable\": 1, \"repeat\":0, \"mode\": 0, \"Time\": \"" + offTime_string + "\", \"action\": 0, \"days\": \"" + weekDay_string + "\" }; endon")
+            mqttActions.publishMQTT("cmnd/shelly-bulb-1/rule1", "1")
+            mqttActions.publishMQTT("cmnd/shelly-bulb-2/rule1", "1")
 
             logInfo("myLog", "Sunrise wake up was scheduled. Weekday: " + zdt.getDayOfWeek() + " / Start: " + startTime_string + " / Alarm: " + ZonedDateTime.ofInstant(Instant.ofEpochMilli((AlarmClockTime.state as DateTimeType).zonedDateTime.toInstant.toEpochMilli), ZoneId.of("Europe/Berlin")).format(formatter) + " / Switch off: " + offTime_string)
         }
@@ -73,10 +72,10 @@ when
 then
     val mqttActions = getActions("mqtt","mqtt:broker:broker")
 
-    // disable timers 1 and 2
+    // disable timer
     mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer1", "0")
-    mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer2", "0")
     mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer1", "0")
+    mqttActions.publishMQTT("cmnd/shelly-bulb-1/timer2", "0")
     mqttActions.publishMQTT("cmnd/shelly-bulb-2/timer2", "0")
 
     logInfo("myLog", "Sunrise wake up was disabled.")
